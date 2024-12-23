@@ -10,4 +10,8 @@
     'ExchangeOnlineManagement' = '3.*'
     'PowerShellGet' = '2.*'
     'PackageManagement' = '1.*'
+    'Microsoft.Graph.Authentication' = '2.*'
+    'Microsoft.Graph.Applications'   = '2.*'
+    'Microsoft.Graph.Users.Actions'  = '2.*'
+    'Microsoft.Graph.Groups'         = '2.*'
 }
