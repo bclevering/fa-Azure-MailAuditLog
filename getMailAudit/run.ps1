@@ -107,9 +107,14 @@ try {
 "@
         
         $msgBody = $mailMessage
+        $byteArray = $memoryStream.ToArray()
+        $EncodedAttachment = [System.Convert]::ToBase64String($byteArray)
 
-        $EncodedAttachment = $memoryStream | ConvertFrom-MemoryStream -ToBase64
 
+        $toRecipient = $mailbox
+        if ($env:OverrideSend -ne "") {
+            $toRecipient = $env:OverrideSend
+        }
         $bodyParams = @{
             message = @{
                 Subject = "Monthly Auditlog for you"
@@ -120,7 +125,7 @@ try {
                 ToRecipients = @(
                     @{
                       EmailAddress = @{
-                      Address = $mailbox
+                      Address = $toRecipient
                       }
                     }
                   )
@@ -134,7 +139,7 @@ try {
         }
         
         $Message = New-MgUserMessage -BodyParameter $bodyParams
-        Send-MgUserMessage -UserId $mailbox -MessageId $Message.Id 
+        Send-MgUserMessage -UserId $mailbox -MessageId $Message.Id
     }
 
 }
