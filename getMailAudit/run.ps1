@@ -16,6 +16,9 @@ $tenant = $env:Tenant
 try {
     Connect-ExchangeOnline -ManagedIdentity -Organization $tenant
     # Execute the EXO commands you want here
+    $audit = $env:auditList
+    Write-Host "AuditLog:"
+    Write-Host $audit -ForegroundColor Yellow
 }
 catch {    
     # Implement error handling here    
