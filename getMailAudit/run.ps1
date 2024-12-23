@@ -83,6 +83,7 @@ try {
     $mailboxes = $audit.Split(",")
 
     foreach($mailbox in $mailboxes) {
+        write-host "Opening" $mailbox
         $data = CreateAuditLog -Mailbox $mailbox -StartDate $StartDate -EndDate $Now -ReturnObject -IncludeFolderBind
         
         # Convert the data to CSV format and store it in a MemoryStream
@@ -139,7 +140,7 @@ try {
         }
         
         $Message = New-MgUserMessage -BodyParameter $bodyParams
-        Send-MgUserMessage -UserId $mailbox -MessageId $Message.Id
+        #Send-MgUserMessage -UserId $mailbox -MessageId $Message.Id
     }
 
 }
