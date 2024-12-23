@@ -16,9 +16,9 @@ function CreateAuditLog {
     param ([PARAMETER(Mandatory=$TRUE,ValueFromPipeline=$FALSE)]
     [string]$Mailbox,
     [PARAMETER(Mandatory=$TRUE,ValueFromPipeline=$FALSE)]
-    [string]$StartDate,
+    [datetime]$StartDate,
     [PARAMETER(Mandatory=$TRUE,ValueFromPipeline=$FALSE)]
-    [string]$EndDate,
+    [datetime]$EndDate,
     [PARAMETER(Mandatory=$FALSE,ValueFromPipeline=$FALSE)]
     [string]$Subject,
     [PARAMETER(Mandatory=$False,ValueFromPipeline=$FALSE)]
@@ -77,25 +77,65 @@ try {
     Write-Host "AuditLog:"
     Write-Host $audit -ForegroundColor Yellow
 
-    $StartDate = $Now.AddDays($DueDays).TotalSeconds -le 0
+    $StartDate = $Now.AddDays($DueDays)
+    write-host "Searching mail from:" $StartDate.toString() " till: "$Now.ToString() -ForegroundColor Yellow
 
     $mailboxes = $audit.Split(",")
-    $data = ""
+
     foreach($mailbox in $mailboxes) {
-        $data += CreateAuditLog -Mailbox $mailbox -StartDate $StartDate -EndDate $Now -ReturnObject -IncludeFolderBind
+        $data = CreateAuditLog -Mailbox $mailbox -StartDate $StartDate -EndDate $Now -ReturnObject -IncludeFolderBind
+        
+        # Convert the data to CSV format and store it in a MemoryStream
+        $memoryStream = New-Object System.IO.MemoryStream
+        $streamWriter = New-Object System.IO.StreamWriter($memoryStream)
+        $csv = $data | ConvertTo-Csv -NoTypeInformation
+        $csv | ForEach-Object { $streamWriter.WriteLine($_) }
+        $streamWriter.Flush()
+        $memoryStream.Position = 0
+
+        $mailMessage = 
+        @" 
+          <!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN'  'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>
+          <html xmlns='http://www.w3.org/1999/xhtml'>
+          <head>
+          <title>HTML TABLE</title>
+          </head>
+          Hereby we send you an overview of the auditlog from your e-mail address <b>' + $mailbox + '</b>
+          <p>Start date: $startdate</p>
+          <p>End date: $enddate</p>
+          </html>
+"@
+        
+        $msgBody = $mailMessage
+
+        $EncodedAttachment = $memoryStream | ConvertFrom-MemoryStream -ToBase64
+
+        $bodyParams = @{
+            message = @{
+                Subject = "Monthly Auditlog for you"
+                Body = @{
+                    ContentType = "HTML"
+                    Content = $msgBody
+                    }
+                ToRecipients = @(
+                    @{
+                      EmailAddress = @{
+                      Address = $mailbox
+                      }
+                    }
+                  )
+                 Attachment = @{
+                    "@odata.type"= "#microsoft.graph.fileAttachment"
+                    name = 'report.csv'
+                    contentBytes = $EncodedAttachment
+                }
+              }
+              saveToSentItems = "false"
+        }
+        
+        $Message = New-MgUserMessage -BodyParameter $bodyParams
+        Send-MgUserMessage -UserId $mailbox -MessageId $Message.Id 
     }
-
-    # Convert the data to CSV format and store it in a MemoryStream
-    $memoryStream = New-Object System.IO.MemoryStream
-    $streamWriter = New-Object System.IO.StreamWriter($memoryStream)
-    $csv = $data | ConvertTo-Csv -NoTypeInformation
-    $csv | ForEach-Object { $streamWriter.WriteLine($_) }
-    $streamWriter.Flush()
-    $memoryStream.Position = 0
-
-
-    
-
 
 }
 catch {    
