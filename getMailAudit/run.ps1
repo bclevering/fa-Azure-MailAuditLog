@@ -106,9 +106,9 @@ try {
 
 
         $toRecipient = $mailbox
-        if ($env:OverrideSend -ne "") {
-            $toRecipient = $env:OverrideSend
-        }
+        # if ($env:OverrideSend -ne "") {
+        #     $toRecipient = $env:OverrideSend
+        # }
         $bodyParams = @{
             message = @{
                 Subject = "Monthly Auditlog"
