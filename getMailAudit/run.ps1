@@ -106,6 +106,8 @@ try {
 
 
         $toRecipient = $mailbox
+
+        #For testing i used an overrule, but now it's disabled
         # if ($env:OverrideSend -ne "") {
         #     $toRecipient = $env:OverrideSend
         # }
