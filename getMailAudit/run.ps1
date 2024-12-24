@@ -32,13 +32,6 @@ function CreateAuditLog {
         if ($ReturnObject) {
             return $SearchResults
         }
-        elseif ($SearchResults.count -gt 0) {
-            #$Date = get-date -Format yyMMdd_HHmmss
-            #$OutFileName = "AuditLogResults$Date.csv"
-            #write-host
-            #write-host -ForegroundColor green "Posting results to file: $OutfileName"
-            #$SearchResults | export-csv $OutFileName -notypeinformation -encoding UTF8
-        }
     }
     PROCESS
     {
@@ -118,7 +111,7 @@ try {
         }
         $bodyParams = @{
             message = @{
-                Subject = "Monthly Auditlog for you"
+                Subject = "Monthly Auditlog"
                 Body = @{
                     ContentType = "HTML"
                     Content = $msgBody
@@ -140,7 +133,7 @@ try {
         }
         
         $Message = New-MgUserMessage -BodyParameter $bodyParams
-        #Send-MgUserMessage -UserId $mailbox -MessageId $Message.Id
+        Send-MgUserMessage -UserId $mailbox -MessageId $Message.Id
     }
 
 }
